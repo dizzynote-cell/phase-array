@@ -1,0 +1,18 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>PHASE ARRAY（相位阵列）音频视觉工具</title><link rel="stylesheet" href="studio.css">
+<aside id="startup" role="status" style="padding:12px 20px;background:#182431;color:#e3eff8;font:14px system-ui">正在启动工作台。如果此提示持续显示，请用 Edge 或 Chrome 打开完整的 HTML 文件。<noscript>请在浏览器中启用 JavaScript。</noscript></aside>
+<script>
+window.addEventListener('error',function(event){
+ var banner=document.getElementById('startup');
+ if(!banner || banner.hidden)return;
+ var file=event.target && (event.target.src || event.target.href);
+ banner.textContent='工作台启动异常：'+(file ? '无法加载 '+file.split('/').pop() : event.message || '当前浏览器无法运行脚本')+'。请用 Edge 或 Chrome 打开便携版 HTML。';
+},true);
+</script><header><b class="brand">▥</b><div class='wordmark'><strong>PHASE ARRAY</strong><small>相位阵列 · 音频视觉工具</small></div><i></i><button id="theme">演播室风格</button><button id="palette"></button><button id="restore">恢复工程</button><button id="save">保存工程</button><button id="fresh">新建</button><button id="imp">＋ 导入音频</button><button class="accent" id="exp">↓ 导出 WAV</button><input hidden multiple type="file" accept="audio/*" id="files"></header>
+<main><section class="heading"><div><small>ARRANGEMENT</small><h1>多轨编排</h1></div><span id="summary"></span></section>
+<nav><button id="home" title="回到开头">⏮</button><button id="play" class="accent">▶ 播放</button><output id="clock">00:00.00</output><i></i><button id="fx">＋ DJ FX</button><button id="video">● 横屏录像</button><button id="split">✂ 分割</button><button id="del">删除片段</button><button id="undo">↶ 撤销</button><button id="zoomOut" title="缩小">−</button><button id="zoomIn" title="放大">＋</button></nav>
+<div class="scroll"><div id="timeline"></div></div>
+<div class="spectrum"><small>混音频谱</small><canvas id="meter" width="1280" height="48"></canvas></div><article><small>CLIP INSPECTOR</small><h2 id="name"></h2><div class="controls" id="controls"></div></article><footer><span id="status" role="status"></span><i></i>空格 播放　·　S 分割　·　拖动波形移动片段</footer></main><dialog id="videoPanel"><div class="videoBar"><strong>横屏录像</strong><small>1920 × 1080</small><select id="videoFps" aria-label="Recording frame rate"><option value="60" selected>60 FPS</option><option value="30">30 FPS</option></select><i></i><button id="closeVideo">关闭</button></div><canvas id="stage" width="1920" height="1080"></canvas><div class="videoBar"><label>起点（秒）<input id="from" type="number" min="0" step="any"></label><label>终点（秒）<input id="until" type="number" min="0" step="any"></label><label>时间窗口<select id="windowTime"><option value="2">2 s</option><option value="4">4 s</option><option selected value="8">8 s</option><option value="16">16 s</option><option value="32">32 s</option><option value="64">64 s</option></select></label><label>波形高度<select id="waveHeight"><option>0.5×</option><option selected>1×</option><option>2×</option><option>4×</option></select></label><i></i><span id="videoStatus"></span><button class="accent" id="record">开始录像</button></div></dialog><dialog id="fxPanel"><h2>DJ FX</h2><div class="fxForm"><label>转场效果<select id="preset"></select></label><label>长度（秒）<input id="fxLength" type="number" min=".1" max="60" step=".1" value="4"></label><label>速度（BPM）<input id="bpm" type="number" min="40" max="300" value="120"></label></div><p id="fxHint"></p><div class="fxActions"><button id="fxClose">关闭</button><button id="applyFx" class="accent">添加 FX</button></div></dialog><script src="vendor/Tone.js"></script><script src="palette.js"></script><script src="studio.js"></script><script src="video.js"></script><script src="effects.js"></script><script src="theme.js"></script></html>
+
+
+
+
