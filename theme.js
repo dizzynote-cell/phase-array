@@ -4,6 +4,7 @@ const english=new Map(Object.entries({
 }));
 const originals=new WeakMap();
 function translateNode(text){
+ if(text.parentElement?.classList.contains("trackName"))return;
  const value=text.nodeValue.trim();
  if(isTech()&&english.has(value)){
   if(text.parentElement?.tagName==='OPTION'&&!text.parentElement.hasAttribute('value'))text.parentElement.value=value;

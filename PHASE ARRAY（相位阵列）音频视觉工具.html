@@ -60,6 +60,10 @@ body.tech, .tech .label, .tech .wordmark, .tech dialog { color:var(--studio-ink)
 .clip.dragging{pointer-events:none;z-index:4;cursor:grabbing}
 .lane.dropTarget{outline:1px solid #78c7ed;outline-offset:-1px}
 .tech .lane.dropTarget{outline-color:var(--studio-accent)}
+
+.label button.trackName {display:block;position:relative;width:100%;margin:0;padding:0 18px 0 0;border:0;background:transparent;color:inherit;font:600 12px "Segoe UI",sans-serif;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trackName::after {content:"✎";position:absolute;right:0;opacity:.7}
+.trackName:hover::after,.trackName:focus-visible::after {opacity:1}
 </style>
 <aside id="startup" role="status" style="padding:12px 20px;background:#182431;color:#e3eff8;font:14px system-ui">正在启动工作台。如果此提示持续显示，请用 Edge 或 Chrome 打开完整的 HTML 文件。<noscript>请在浏览器中启用 JavaScript。</noscript></aside>
 <script>
@@ -140,12 +144,27 @@ function stop(){if(running)pos=Math.min(duration(),ctx.currentTime-origin);runni
 function remember(){stop();history.push(structuredClone({tracks,clips,selected,pos}));if(history.length>40)history.shift()}
 function track(name){const t={id:++sequence,name,mute:false,solo:false};tracks.push(t);return t.id}
 function trackLabel(t){
+ if(t.customName)return t.customName;
  if(!document.body.classList.contains('tech'))return t.name;
  const demos={'01  ·  低音脉冲':'Bass Pulse','02  ·  和弦铺底':'Chord Pad','03  ·  节奏打击':'Percussion'};
  if(demos[t.name])return demos[t.name];
  if(/^[ -~]+$/.test(t.name))return t.name;
  const group=tracks.filter(track=>Boolean(track.fx)===Boolean(t.fx));
  return (t.fx?'FX ':'Track ')+String(group.indexOf(t)+1).padStart(2,'0')
+}
+function editTrackLabel(label,t){
+ const title=label.querySelector('b');
+ const button=document.createElement('button');
+ button.className='trackName';
+ button.textContent=trackLabel(t);
+ button.title=isTech()?'Rename track':'重命名音轨';
+ button.setAttribute('aria-label',button.title+' · '+button.textContent);
+ title.replaceWith(button);
+ button.onclick=()=>{
+  const value=window.prompt(button.title,trackLabel(t));
+  if(!value?.trim()||value.trim()===trackLabel(t))return;
+  remember();t.customName=value.trim();refresh()
+ }
 }
 function fillTracks(){
  while(tracks.length<6)track('音轨 '+String(tracks.length+1).padStart(2,'0'));
@@ -195,7 +214,7 @@ function refresh(){
  const tl=$('timeline');tl.replaceChildren();const width=Math.max($('timeline').parentNode.clientWidth-162,(duration()+4)*scale,400);tl.style.width=width+160+'px';
  function row(title,ruler=false){const r=el('div','row'+(ruler?' ruler':''),tl),label=el('div','label',r);el('b','',label,title);const lane=el('div','lane',r);lane.style.backgroundSize=scale*2+'px 100%';lane.onclick=e=>{stop();pos=Math.max(0,(e.clientX-lane.getBoundingClientRect().left)/scale);cursor()};return {label,lane}}
  const ruler=row('轨道 / TRACKS',true).lane,step=Math.max(1,Math.ceil(85/scale));for(let t=0;t*scale<width;t+=step)el('span','tick',ruler,stamp(t).slice(0,5)).style.left=t*scale+4+'px';
- for(const t of tracks){const {label,lane}=row(trackLabel(t));lane.dataset.track=t.id;for(const [k,title] of [['mute','静音'],['solo','独听']]){const b=el('button',t[k]?'on':'',label,title);b.onclick=()=>{remember();t[k]=!t[k];refresh()}}
+ for(const t of tracks){const {label,lane}=row(trackLabel(t));editTrackLabel(label,t);lane.dataset.track=t.id;for(const [k,title] of [['mute','静音'],['solo','独听']]){const b=el('button',t[k]?'on':'',label,title);b.onclick=()=>{remember();t[k]=!t[k];refresh()}}
  for(const c of clips.filter(c=>c.track===t.id)){const box=el('div','clip'+(selected===c.id?' active':''),lane);box.style.left=c.at*scale+'px';box.style.width=Math.max(2,length(c)*scale)+'px';el('span','',box,c.name);
  const wave=el('canvas','',box),w=wave.width=Math.min(3000,Math.max(2,Math.ceil(length(c)*scale))),h=wave.height=35,g=wave.getContext('2d'),buf=buffers.get(c.asset),data=buf.getChannelData(0),stride=(c.end-c.begin)*buf.sampleRate/w;
  g.fillStyle=document.body.classList.contains('tech')?studioColor.wave():'#56b9e9';const gainScale=10**(c.gain/20),[fi,fo]=fadeTimes(c);for(let x=0;x<w;x++){let peak=0;const start=c.begin*buf.sampleRate+x*stride;for(let j=0;j<32;j++)peak=Math.max(peak,Math.abs(data[Math.floor(start+j*stride/32)]||0));const time=x*length(c)/w;const envelope=Math.min(1,fi?time/fi:1,fo?(length(c)-time)/fo:1);const a=Math.min(16,peak*16*gainScale*envelope);g.fillRect(x,17-a,1,Math.max(1,2*a))}
@@ -524,6 +543,7 @@ const english=new Map(Object.entries({
 }));
 const originals=new WeakMap();
 function translateNode(text){
+ if(text.parentElement?.classList.contains("trackName"))return;
  const value=text.nodeValue.trim();
  if(isTech()&&english.has(value)){
   if(text.parentElement?.tagName==='OPTION'&&!text.parentElement.hasAttribute('value'))text.parentElement.value=value;
